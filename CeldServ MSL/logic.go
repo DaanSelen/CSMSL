@@ -5,8 +5,6 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	"github.com/jasonlvhit/gocron"
 )
 
 const (
@@ -25,14 +23,6 @@ type Site struct {
 	ID  int    `json:"id"`
 	APP string `json:"app"`
 	URL string `json:"url"`
-}
-
-func myTask() {
-	fmt.Println("This task will run periodically")
-}
-func executeCronJob() {
-	gocron.Every(1).Minute().Do(myTask)
-	<-gocron.Start()
 }
 
 func initAll() {
@@ -104,6 +94,7 @@ func startProcess() {
 				return
 			default:
 				scanLinks()
+				time.Sleep(10 * time.Second)
 			}
 		}
 	}()
@@ -111,8 +102,7 @@ func startProcess() {
 }
 
 func scanLinks() {
-	fmt.Println("Test")
-	time.Sleep(2 * time.Second)
+	fmt.Println("10 Secondns")
 }
 
 func stopProcess() {
@@ -121,7 +111,7 @@ func stopProcess() {
 }
 
 func checkInput() {
-	fmt.Println("Enter a command to begin.")
+	fmt.Println("Enter a command to begin/continue.")
 	input := ""
 	switch fmt.Scanln(&input); strings.ToLower(input) {
 	case allCommands[0][0], allCommands[0][2]: //info
@@ -149,7 +139,7 @@ func checkInput() {
 		getAddSiteInfo()
 	case allCommands[6][0], allCommands[6][2]: //deletesite
 		getDelSiteInfo()
-	case allCommands[7][0], allCommands[7][2]:
+	case allCommands[7][0], allCommands[7][2]: //showall
 		getAllSites()
 	default: //unrecognised
 		fmt.Println("Unrecognised command, try again.")
