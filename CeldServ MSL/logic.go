@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/jasonlvhit/gocron"
 )
@@ -15,7 +16,9 @@ const (
 )
 
 var (
+	quit        = make(chan struct{})
 	allCommands [][]string
+	activeIndex int
 )
 
 type Site struct {
@@ -79,7 +82,7 @@ func initHelpCommand() {
 		"help", "Help displays all the available commands in the application.", "h",
 		"start", "Starts the downloading and monitoring process.", "begin",
 		"stop", "Stops the downloading and monitoring process.", "end",
-		"exit", "Quits the application entirely.", "e",
+		"exit", "Quits the application entirely.", "quit",
 		"addsite", "Gives the ability to add a site to the database.", "adds",
 		"deletesite", "Gives the ability to add a site to the database.", "dels",
 		"showall", "Shows all the sites stored in the database.", "seeall",
@@ -90,6 +93,31 @@ func initHelpCommand() {
 		allCommands = append(allCommands, singleCommand)
 		x += 3
 	}
+}
+
+func startProcess() {
+	quit = make(chan struct{})
+	go func() {
+		for {
+			select {
+			case <-quit:
+				return
+			default:
+				scanLinks()
+			}
+		}
+	}()
+	checkInput()
+}
+
+func scanLinks() {
+	fmt.Println("Test")
+	time.Sleep(2 * time.Second)
+}
+
+func stopProcess() {
+	close(quit)
+	checkInput()
 }
 
 func checkInput() {
@@ -108,7 +136,11 @@ func checkInput() {
 		fmt.Println()
 		checkInput()
 	case allCommands[2][0], allCommands[2][2]: //start
+		fmt.Println("STARTING PROCESS")
+		startProcess()
 	case allCommands[3][0], allCommands[3][2]: //stop
+		fmt.Println("STOPPING PROCESS")
+		stopProcess()
 	case allCommands[4][0], allCommands[4][2]: //exit
 		fmt.Println("\nExiting. Press the 'ENTER' key to close the application.")
 		fmt.Scanln()
