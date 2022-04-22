@@ -26,9 +26,10 @@ type Site struct {
 }
 
 func initAll() {
-	fmt.Println("Welcome to CeldServ MSL!")
+	fmt.Println("Welcome to CeldServ MSL! Initialising.")
 	initHelpCommand()
 	initDB()
+	initDir()
 }
 
 func getAddSiteInfo() {
@@ -66,43 +67,29 @@ func checkIfHttps(candidate string) bool {
 	return check
 }
 
-func initHelpCommand() {
-	rawCommands := []string{
-		"info", "Info shows information about the software version, creator and purpose.", "i",
-		"help", "Help displays all the available commands in the application.", "h",
-		"start", "Starts the downloading and monitoring process.", "begin",
-		"stop", "Stops the downloading and monitoring process.", "end",
-		"exit", "Quits the application entirely.", "quit",
-		"addsite", "Gives the ability to add a site to the database.", "adds",
-		"deletesite", "Gives the ability to add a site to the database.", "dels",
-		"showall", "Shows all the sites stored in the database.", "seeall",
-	}
-
-	for x := 0; x <= (len(rawCommands) - 3); {
-		singleCommand := []string{rawCommands[x], rawCommands[x+1], rawCommands[x+2]}
-		allCommands = append(allCommands, singleCommand)
-		x += 3
-	}
-}
-
 func startProcess() {
-	quit = make(chan struct{})
-	go func() {
-		for {
-			select {
-			case <-quit:
-				return
-			default:
-				scanLinks()
-				time.Sleep(10 * time.Second)
+	if checkIfSitesPresent() {
+		quit = make(chan struct{})
+		go func() {
+			for {
+				select {
+				case <-quit:
+					return
+				default:
+					scanLinks()
+					time.Sleep(10 * time.Second)
+				}
 			}
-		}
-	}()
-	checkInput()
+		}()
+		checkInput()
+	} else {
+		fmt.Println("There are no URLS of apps in the database, add some with the addsite command.")
+		checkInput()
+	}
 }
 
 func scanLinks() {
-	fmt.Println("10 Secondns")
+
 }
 
 func stopProcess() {
@@ -140,7 +127,10 @@ func checkInput() {
 	case allCommands[6][0], allCommands[6][2]: //deletesite
 		getDelSiteInfo()
 	case allCommands[7][0], allCommands[7][2]: //showall
-		getAllSites()
+		sites := getAllSites()
+		fmt.Println(sites)
+	case allCommands[8][0], allCommands[8][2]: //cleardb
+		clearDatabaseTable()
 	default: //unrecognised
 		fmt.Println("Unrecognised command, try again.")
 		checkInput()
