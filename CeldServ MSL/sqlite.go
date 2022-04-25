@@ -37,6 +37,7 @@ func getAllSites() []Site {
 	fmt.Println("Getting all sites.")
 	rows, _ := sites.Query("SELECT * FROM site")
 	var sites []Site
+
 	for rows.Next() {
 		var site Site
 		rows.Scan(&site.ID, &site.APP, &site.URL)
@@ -46,12 +47,21 @@ func getAllSites() []Site {
 }
 
 func clearDatabaseTable() {
-	sites.Query("DROP TABLE site")
-	fmt.Println("TABLE CLEARED, REINITIALISING.")
-	sites.Query("CREATE TABLE IF NOT EXISTS site (id INTEGER PRIMARY KEY, app TEXT, url TEXT)")
+	statement1, _ := sites.Prepare("DROP TABLE IF EXISTS site")
+	statement2, _ := sites.Prepare("CREATE TABLE IF NOT EXISTS site (id INTEGER PRIMARY KEY, app TEXT, url TEXT)")
+	defer statement1.Close()
+	defer statement2.Close()
+	statement1.Exec()
+	statement2.Exec()
 	fmt.Println("DATABASE CLEAR FINISHED.")
+	checkInput()
 }
 
 func checkIfSitesPresent() bool {
-	return true
+	sites := getAllSites()
+	if len(sites) == 0 {
+		return false
+	} else {
+		return true
+	}
 }
